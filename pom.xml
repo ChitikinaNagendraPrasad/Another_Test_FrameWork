@@ -1,0 +1,167 @@
+<project xmlns="https://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>Test</groupId>
+	<artifactId>Test</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>Another_Test_FrameWork</name>
+	<description>Selenium + TestNG + WebDriverManager + ExtentReports + Allure;
+		CI-ready with Surefire.</description>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<java.version>17</java.version>
+		<maven.compiler.source>${java.version}</maven.compiler.source>
+		<maven.compiler.target>${java.version}</maven.compiler.target>
+
+		<!-- Centralized versions -->
+		<selenium.bom.version>4.39.0</selenium.bom.version>
+		<testng.version>7.11.0</testng.version>
+		<webdrivermanager.version>6.3.3</webdrivermanager.version>
+		<extentreports.version>5.1.2</extentreports.version>
+		<allure.version>2.32.0</allure.version>
+		<aspectj.version>1.9.25.1</aspectj.version>
+
+		<surefire.plugin.version>3.5.4</surefire.plugin.version>
+		<compiler.plugin.version>3.14.1</compiler.plugin.version>
+		<allure.maven.plugin.version>2.17.0</allure.maven.plugin.version>
+	</properties>
+
+	<!-- Keep Selenium, Allure, Log4j (if added later) aligned via BOMs -->
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.seleniumhq.selenium</groupId>
+				<artifactId>selenium-bom</artifactId>
+				<version>${selenium.bom.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>io.qameta.allure</groupId>
+				<artifactId>allure-bom</artifactId>
+				<version>${allure.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+		<!-- Selenium (managed by BOM) -->
+		<dependency>
+			<groupId>org.seleniumhq.selenium</groupId>
+			<artifactId>selenium-java</artifactId>
+		</dependency>
+
+		<!-- TestNG (test framework) -->
+		<dependency>
+			<groupId>org.testng</groupId>
+			<artifactId>testng</artifactId>
+			<version>${testng.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- WebDriverManager for automatic driver binaries -->
+		<dependency>
+			<groupId>io.github.bonigarcia</groupId>
+			<artifactId>webdrivermanager</artifactId>
+			<version>${webdrivermanager.version}</version>
+		</dependency>
+
+		<!-- ExtentReports (Spark HTML reporter) -->
+		<dependency>
+			<groupId>com.aventstack</groupId>
+			<artifactId>extentreports</artifactId>
+			<version>${extentreports.version}</version>
+		</dependency>
+
+		<!-- Allure core so @Step can be used in main sources (pages, utils,
+		etc.) -->
+		<dependency>
+			<groupId>io.qameta.allure</groupId>
+			<artifactId>allure-java-commons</artifactId>
+		</dependency>
+
+		<!-- Allure TestNG adapter (test time only) -->
+		<dependency>
+			<groupId>io.qameta.allure</groupId>
+			<artifactId>allure-testng</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Core POI (HSSF for XLS, common APIs) -->
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi</artifactId>
+			<version>5.5.1</version>
+		</dependency>
+
+		<!-- OOXML support (XSSF for XLSX files) -->
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+			<version>5.5.1</version>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<plugins>
+			<!-- Java 17 compiler -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${compiler.plugin.version}</version>
+				<configuration>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
+					<release>${java.version}</release>
+				</configuration>
+			</plugin>
+
+			<!-- Test runner: uses TestNG suite; injects AspectJ for Allure -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>${surefire.plugin.version}</version>
+				<configuration>
+					<!-- Point to your TestNG suite file -->
+					<suiteXmlFiles>
+						<suiteXmlFile>testng.xml</suiteXmlFile>
+					</suiteXmlFiles>
+
+					<!-- Allure results folder -->
+					<systemPropertyVariables>
+						<allure.results.directory>
+							${project.build.directory}/allure-results</allure.results.directory>
+					</systemPropertyVariables>
+
+					<!-- Allure runtime weaving via AspectJ -->
+					<argLine>
+						-javaagent:"${settings.localRepository}/org/aspectj/aspectjweaver/${aspectj.version}/aspectjweaver-${aspectj.version}.jar"</argLine>
+
+					<!-- Parallel example (tune as needed) -->
+					<parallel>methods</parallel>
+					<useUnlimitedThreads>true</useUnlimitedThreads>
+				</configuration>
+				<dependencies>
+					<dependency>
+						<groupId>org.aspectj</groupId>
+						<artifactId>aspectjweaver</artifactId>
+						<version>${aspectj.version}</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+
+			<!-- Allure Maven plugin (serve/generate report locally if needed) -->
+			<plugin>
+				<groupId>io.qameta.allure</groupId>
+				<artifactId>allure-maven</artifactId>
+				<version>${allure.maven.plugin.version}</version>
+			</plugin>
+		</plugins>
+	</build>
+</project>
+
+
